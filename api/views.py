@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 
-from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView, UpdateAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, APIView
@@ -85,3 +85,7 @@ class booksUpdate(UpdateAPIView):
 
     def get_queryset(self):
         return booksModel.objects.filter(user=self.request.user)
+
+class deleteBook(DestroyAPIView):
+    queryset = booksModel.objects.all()
+    serializer_class = booksSerializer
