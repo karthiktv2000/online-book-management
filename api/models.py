@@ -18,6 +18,7 @@ class userModel(AbstractUser):
 
 
 class booksModel(models.Model):
+    user = models.ForeignKey(userModel, on_delete=models.CASCADE, related_name='books')
     book_name = models.CharField(max_length=100)
     price = models.IntegerField()
     author = models.CharField(max_length=100)

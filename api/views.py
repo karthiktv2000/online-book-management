@@ -1,13 +1,13 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 
-from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, APIView
 from rest_framework import permissions
 
-from api.serializers import userSerializer, loginSerializer, StudentDetails, booksSerializer
+from api.serializers import userSerializer, loginSerializer, StudentDetails, booksSerializer, updateSerializer
 
 from . models import userModel, booksModel
 # Create your views here.
@@ -51,7 +51,7 @@ class MyProtectedView(GenericAPIView):
         content = {'message': 'You are authenticated and authorized to access this view!'}
         return Response(content)        
     
-class LogoutView(APIView):
+class LogoutView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -63,11 +63,25 @@ class StudentDetailView(ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return userModel.objects.filter(username=self.request.user)
-    
+        return userModel.objects.filter(username=self.request.user)    
     
 class addBooks(CreateAPIView):
     serializer_class = booksSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = booksModel.objects.all()
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
+class booksListView(ListAPIView):
+    serializer_class = booksSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return booksModel.objects.filter(user=self.request.user) 
+
+class booksUpdate(UpdateAPIView):
+    serializer_class = updateSerializer   
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return booksModel.objects.filter(user=self.request.user)

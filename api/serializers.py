@@ -31,8 +31,15 @@ class StudentDetails(serializers.Serializer):
     shop_name = serializers.CharField(max_length = 100)  
 
 class booksSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = booksModel   
         fields = '__all__'
+        read_only_fields = ["user"]
+
+class updateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = booksModel
+        fields = '__all__'
+        read_only_fields = ['']
+
                 
