@@ -10,11 +10,15 @@ from rest_framework import permissions
 from api.serializers import userSerializer, loginSerializer, StudentDetails, booksSerializer, updateSerializer
 
 from . models import userModel, booksModel
+from .pdf_report import pdf_report
+from wkhtmltopdf.views import PDFTemplateView
+from datetime import date, datetime
 # Create your views here.
 
 
 class registerUser(GenericAPIView):
     serializer_class = userSerializer
+    permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -89,3 +93,25 @@ class booksUpdate(UpdateAPIView):
 class deleteBook(DestroyAPIView):
     queryset = booksModel.objects.all()
     serializer_class = booksSerializer
+
+
+# class report(APIView):
+#     permission_classes = [permissions.IsAuthenticated]
+
+#     def post(self, request):
+#         user=userModel.objects.filter(username=self.request.user)
+#         a=request.user
+#         print(user)
+#         return Response({"message":"hello"})
+
+class pdf_report(PDFTemplateView):
+    template_name = 'user_pdf.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.request.user
+        context['date'] = datetime.now()
+        return context
+
+    def get_filename(self):
+        return f'{self.request.user.username}.pdf'
