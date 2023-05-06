@@ -10,7 +10,6 @@ from rest_framework import permissions
 from api.serializers import userSerializer, loginSerializer, StudentDetails, booksSerializer, updateSerializer
 
 from . models import userModel, booksModel
-from .pdf_report import pdf_report
 from wkhtmltopdf.views import PDFTemplateView
 from datetime import date, datetime
 # Create your views here.
