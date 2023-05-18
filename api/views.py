@@ -12,13 +12,18 @@ from api.serializers import userSerializer, loginSerializer, StudentDetails, boo
 from . models import userModel, booksModel
 from wkhtmltopdf.views import PDFTemplateView
 from datetime import date, datetime
+from django.conf import settings
+from django.views.decorators.cache import cache_page
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
+from django.utils.decorators import method_decorator
 # Create your views here.
 
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 class registerUser(GenericAPIView):
     serializer_class = userSerializer
     permission_classes = (permissions.AllowAny,)
-
+    @method_decorator(cache_page(CACHE_TTL))
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -29,7 +34,7 @@ class registerUser(GenericAPIView):
     
 class loginUser(GenericAPIView):
     serializer_class = loginSerializer
-
+    @method_decorator(cache_page(CACHE_TTL))
     def post(self, request):
         serializer = self.get_serializer(data = request.data)
         if serializer.is_valid():
@@ -38,7 +43,7 @@ class loginUser(GenericAPIView):
                 login(request, user)
                 request.session['logged_in'] = True
                 request.session['username'] = request.data['username']
-                return Response({"message":"you are logged in"})
+                return Response({"message":"you are logged in"}, status=status.HTTP_201_CREATED)
             else:
                 error_message = "Invalid username or password."
                 return Response({'error_message': error_message})
@@ -46,7 +51,7 @@ class loginUser(GenericAPIView):
             error_message = "Invalid username or password."
             return Response({'error_message': error_message})
         
-class MyProtectedView(GenericAPIView):
+class MyProtectedView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = userModel.objects.all()
 
@@ -54,14 +59,14 @@ class MyProtectedView(GenericAPIView):
         content = {'message': 'You are authenticated and authorized to access this view!'}
         return Response(content)        
     
-class LogoutView(GenericAPIView):
+class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         logout(request)
         return Response({"message": "You have been logged out."})    
 
-class StudentDetailView(ListAPIView):
+class ListUsers(ListAPIView):
     serializer_class = StudentDetails
     permission_classes = [permissions.IsAuthenticated]
 
@@ -93,17 +98,7 @@ class deleteBook(DestroyAPIView):
     queryset = booksModel.objects.all()
     serializer_class = booksSerializer
 
-
-# class report(APIView):
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     def post(self, request):
-#         user=userModel.objects.filter(username=self.request.user)
-#         a=request.user
-#         print(user)
-#         return Response({"message":"hello"})
-
-class pdf_report(PDFTemplateView):
+class pdfReport(PDFTemplateView):
     template_name = 'user_pdf.html'
 
     def get_context_data(self, **kwargs):
@@ -113,4 +108,10 @@ class pdf_report(PDFTemplateView):
         return context
 
     def get_filename(self):
-        return f'{self.request.user.username}.pdf'
+        filename = self.request.user.username + str(datetime.now())
+        return f'{filename}.pdf'
+
+
+class hello(GenericAPIView):
+    def get(self, request):
+        return Response({"hello"})

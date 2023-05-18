@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 
+import logging
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,9 +41,11 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework',
     'api',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -50,8 +53,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
+    'api.middleware.ErrorLoggingMiddleware',
 ]
+    
 
 ROOT_URLCONF = 'book_management.urls'
 
@@ -79,8 +83,12 @@ WSGI_APPLICATION = 'book_management.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'online book management', 
+        'USER': 'postgres',
+        'PASSWORD': 'karthik@123',
+        'HOST': '127.0.0.1', 
+        'PORT': '5432',
     }
 }
 
@@ -127,3 +135,55 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'api.userModel'
+
+INTERNAL_IPS = ('127.0.0.1', '0.0.0.0', 'localhost',)
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+        },
+        "KEY_PREFIX": "example"
+    }
+}
+
+CACHE_TTL = 60 * 15
+
+# LOGGING = {
+#     'version': 1,
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file'],  # Add the file handler to the logger
+#             'level': 'ERROR',
+#         },
+#     },
+#     'handlers': {
+#         'file': {
+#             'level': 'ERROR',  # Set the log level to capture failed logs
+#             'class': 'logging.FileHandler',
+#             'filename': './abc.log',  # Specify the path to the log file
+#         },
+#     },
+# }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',  # Set the log level to capture errors
+            'class': 'logging.FileHandler',
+            'filename': './logs/errors.log',  # Specify the path to the log file
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],  # Add the file handler to the logger
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
+

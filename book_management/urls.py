@@ -17,13 +17,14 @@ from django.contrib import admin
 from django.urls import path, include
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+import debug_toolbar
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="My API",
+        title="Online Book Management",
         default_version="v1",
         description="My API description",
-        contact=openapi.Contact(email="contact@myapi.local"),
+        contact=openapi.Contact(email="karthik2001@@gmail.com"),
     ),
     public=True,
 )
@@ -33,5 +34,6 @@ urlpatterns = [
     path('api/',include('api.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('debug/', include(debug_toolbar.urls)),
    
 ]
